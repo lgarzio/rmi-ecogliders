@@ -33,4 +33,4 @@ Install the toolbox to the conda environment from the root directory of the rmi 
 The toolbox should now be installed to your conda environment.
 
 ## Steps
-1. Using the rucool (dataset_archiving repo)[https://github.com/rucool/dataset_archiving/tree/master], download and QC glider datasets.
+1. Using the RUCOOL [dataset_archiving repo](https://github.com/rucool/dataset_archiving/tree/master), download and QC glider datasets.
