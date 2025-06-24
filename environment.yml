@@ -1,0 +1,21 @@
+name: rmi
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.13.1
+  - pandas==2.2.3
+  - erddapy==2.2.3
+  - cartopy==0.24.0
+  - netcdf4==1.7.2
+  - cmocean==4.0.3
+  - numpy==2.2.2
+  - xarray==2025.1.2
+  - scipy==1.15.1
+  - gsw==3.6.19
+  - geopandas==1.0.1
+  - pyyaml==6.0.2
+  - requests==2.32.3
+  - wheel==0.45.1
+  - pyco2sys==1.8.3.4
+  - cool_maps==1.0.1
