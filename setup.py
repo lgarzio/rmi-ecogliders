@@ -4,8 +4,8 @@ setup(
     name='rmi',
     version='0.1.0',
     packages=find_packages(),
-    url='https://github.com/lgarzio/rmi',
+    url='https://github.com/lgarzio/rmi-ecogliders',
     author='Lori Garzio',
     author_email='lgarzio@marine.rutgers.edu',
-    description='Tools to analyze RMI datasets.'
+    description='Tools to analyze RMI glider datasets.'
 )

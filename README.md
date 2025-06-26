@@ -1,5 +1,5 @@
-# rmi
-Tools for analyzing and plotting RMI data.
+# rmi-ecogliders
+Tools for analyzing and plotting RMI glider data.
 
 Author: Lori Garzio (lgarzio@marine.rutgers.edu)
 
@@ -10,13 +10,13 @@ Add the channel conda-forge to your .condarc. You can find out more about conda-
 
 `conda config --add channels conda-forge`
 
-Clone the rmi repository
+Clone the rmi-ecogliders repository
 
-`git clone https://github.com/lgarzio/rmi.git`
+`git clone https://github.com/lgarzio/rmi-ecogliders.git`
 
-Change your current working directory to the location that you downloaded rmi. 
+Change your current working directory to the location that you downloaded rmi-ecogliders. 
 
-`cd /Users/garzio/Documents/repo/rmi/`
+`cd /Users/garzio/Documents/repo/rmi-ecogliders/`
 
 Create conda environment from the included environment.yml file:
 
