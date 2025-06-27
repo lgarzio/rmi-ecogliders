@@ -29,7 +29,7 @@ def main(savedir):
     # summer_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru39-20240723T1442/ncei_pH/ru39-20240723T1442-delayed_mld.nc')
     # summer_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru40-20240723T1600/ncei_dmon/ru40-20240723T1600-delayed_mld.nc')
     latesummer = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru43-20240904T1539/ncei_pH/ru43-20240904T1539-delayed_mld.nc')
-    fall_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru43-20240904T1539/ncei_pH/ru43-20240904T1539-delayed_mld.nc')
+    fall_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru39-20241021T1717/ncei_pH/ru39-20241021T1717-delayed_mld.nc')
     fall_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru40-20241021T1654/ncei_dmon/ru40-20241021T1654-delayed_mld.nc')
     winter_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2025/ru39-20250226T1700/ncei_pH/ru39-20250226T1700-delayed_mld.nc')
     winter_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2025/ru40-20250226T1704/ncei_dmon/ru40-20250226T1704-delayed_mld.nc')
