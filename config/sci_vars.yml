@@ -1,0 +1,22 @@
+# Configuration file for science variables to build summary files
+temperature:
+  units: degrees_C
+  long_name: Temperature
+salinity:
+  units: '1'
+  long_name: Practical Salinity
+chlorophyll_a:
+  units: ug L-1
+  long_name: Chlorophyll a
+oxygen_concentration_shifted_mgL:
+  units: mg L-1
+  long_name: Time-lag Adjusted Dissolved Oxygen
+pH:
+  units: '1'
+  long_name: Time-lag Adjusted pH
+aragonite_saturation_state:
+  units: '1'
+  long_name: Aragonite Saturation State
+total_alkalinity:
+  units: umol/kg
+  long_name: Total Alkalinity
