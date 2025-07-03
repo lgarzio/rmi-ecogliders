@@ -1,0 +1,50 @@
+# Configuration file for making boxplots
+temperature:
+  surface:
+    ymin: 2
+    ymax: 28
+  bottom:
+    ymin: 3.9
+    ymax: 23
+salinity:
+  surface:
+    ymin: 28
+    ymax: 35
+  bottom:
+    ymin: 28
+    ymax: 36
+chlorophyll_a:
+  surface:
+    ymin: -0.5
+    ymax: 12
+  bottom:
+    ymin: -0.25
+    ymax: 7
+oxygen_concentration_shifted_mgL:
+  surface:
+    ymin: 5.5
+    ymax: 12.5
+  bottom:
+    ymin: 2.8
+    ymax: 11
+pH:
+  surface:
+    ymin: 7.75
+    ymax: 8.3
+  bottom:
+    ymin: 7.5
+    ymax: 8.3
+aragonite_saturation_state:
+  surface:
+    ymin: 1.2
+    ymax: 3.8
+  bottom:
+    ymin: 0.6
+    ymax: 2.7
+total_alkalinity:
+  surface:
+    ymin: 1950
+    ymax: 2300
+  bottom:
+    ymin: 2080
+    ymax: 2350
