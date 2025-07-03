@@ -25,6 +25,25 @@ pd.set_option('display.width', 320, "display.max_columns", 20)  # for display in
 np.set_printoptions(suppress=True)
 
 
+def get_season(timestamp):
+    month = timestamp.month
+    year = timestamp.year
+    if month == 12:
+        season = 'Winter'
+        year = year + 1
+    elif month in [1, 2]:
+        season = 'Winter'
+    elif month in [3, 4, 5]:
+        season = 'Spring'
+    elif month in [6, 7, 8]:
+        season = 'Summer'
+    elif month in [9, 10, 11]:
+        season = 'Fall'
+    else:
+        season = 'Unknown'
+    return f"{season} {year}"
+
+
 def main(fname, project, surf_bot, savedir):
     bathymetry = '/Users/garzio/Documents/rucool/bathymetry/GEBCO_2014_2D_-100.0_0.0_-10.0_50.0.nc'
     extent = [-75.5, -71.5, 38, 41]
@@ -77,6 +96,14 @@ def main(fname, project, surf_bot, savedir):
                 "attrs": {
                     "units": "1",
                     "comment": "Location of data point on the NES, according to modified NOAA bottom trawl survey strata. Options: inshore, midshelf, offshore"
+                }
+            },
+            "season_year": {
+                "dims": "time",
+                "data": np.array([], dtype='object'),
+                "attrs": {
+                    "units": "1",
+                    "comment": "Year and season assignment for data point. Seasons are defined as: Winter (Dec-Feb), Spring (Mar-May), Summer (Jun-Aug), Fall (Sep-Nov)."
                 }
             },
             "profile_lat": {
@@ -190,6 +217,9 @@ def main(fname, project, surf_bot, savedir):
                                     break
 
                             data['coords']['time']['data'] = np.append(data['coords']['time']['data'], pd.to_datetime(ts).timestamp())
+
+                            season_year = get_season(ts)
+
                             for v in data['data_vars']:
                                 if v == 'bottom_depth':
                                     # add bottom depth to the dataset
@@ -202,6 +232,8 @@ def main(fname, project, surf_bot, savedir):
                                 elif v == 'shelf_location':
                                     # add shelf location to the dataset
                                     data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], shelf_location)
+                                elif v == 'season_year':
+                                    data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], season_year)
                                 else:
                                     try:
                                         avg = np.nanmean(pdf[v].values)
@@ -249,7 +281,7 @@ def main(fname, project, surf_bot, savedir):
     # Add compression to all variables
     encoding = {}
     for k in ds.data_vars:
-        if k not in ['deployment', 'shelf_location']:
+        if k not in ['deployment', 'shelf_location', 'season_year']:
             encoding[k] = {'zlib': True, 'complevel': 1}
 
     encoding['time'] = dict(zlib=False, _FillValue=False, dtype=np.double)
@@ -261,6 +293,6 @@ def main(fname, project, surf_bot, savedir):
 if __name__ == '__main__':
     csv_summary = '/Users/garzio/Documents/rucool/Saba/RMI/glider_deployments.csv'
     project = 'RMI'
-    surf_bot = 'bottom'  # grab surface or bottom data
+    surf_bot = 'surface'  # grab surface or bottom data
     savedir = '/Users/garzio/Documents/rucool/Saba/RMI/plots_for_2025_report/data'
     main(csv_summary, project, surf_bot, savedir)
