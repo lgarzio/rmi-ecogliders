@@ -16,7 +16,7 @@ import functions.common as cf
 plt.rcParams.update({'font.size': 13})
 
 
-def main(fname, savedir):
+def main(fname, savedir, add_strata):
     ds = xr.open_dataset(fname)
 
     try:
@@ -42,7 +42,17 @@ def main(fname, savedir):
 
     ax.scatter(df['lon'], df['lat'], color='magenta', marker='.', s=6, transform=ccrs.PlateCarree(), zorder=30)
     
-    sfilename = f'{deploy}_glider_track-combined.png'
+    sfilename = f'{deploy}_glider_track.png'
+
+    if add_strata:
+        kwargs = dict()
+        kwargs['extend'] = True
+        strata_mapping = cf.return_noaa_polygons(**kwargs)
+        for key, values in strata_mapping.items():
+            outside_poly = values['poly']
+            xx, yy = outside_poly.exterior.xy
+            ax.plot(xx, yy, color=values['color'], lw=4, transform=ccrs.PlateCarree(), zorder=20)
+        sfilename = f'{deploy}_glider_track_strata.png'
     
     sfile = os.path.join(savedir, sfilename)
 
@@ -54,4 +64,5 @@ def main(fname, savedir):
 if __name__ == '__main__':
     fname = '/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru40-20231103T1421/ncei_dmon/ru40-20231103T1421-20231115T1612-delayed_mld_combined.nc'
     savedir = '/Users/garzio/Documents/rucool/Saba/RMI/plots_for_2025_report/maps'
-    main(fname, savedir)
+    add_strata = True  # add NOAA strata to the plot, True or False
+    main(fname, savedir, add_strata)
