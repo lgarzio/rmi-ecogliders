@@ -3,6 +3,50 @@
 import numpy as np
 
 
+def calc_mld_upper(df,ref_depth,deltaT,_z,_temp,_sal,lat,lon):
+    #find the depth index closest to reference depth
+    zdiff = _z - ref_depth
+    dref=np.where((zdiff>0) & (zdiff<=1) & (~np.isnan(zdiff)))[0]
+    
+    # dref=np.argmin(np.abs(np.abs(_z)-ref_depth))
+    if (dref.size!=0) and (~np.isnan(_z[dref[0]])):
+        dref=dref[0]
+    # if (np.abs(_z[dref]-ref_depth)<=1) and (~np.isnan(_z[dref])):
+        
+        pres=p_from_z(-_z,lat)
+        SA = SA_from_SP(_sal,pres,lon,lat)
+        #calculate intial rho
+        ini_rho=pot_rho_t_exact(SA,_temp,pres,0)
+        if (~np.isnan(SA[dref])) and (~np.isnan(_temp[dref])) and (~np.isnan(pres[dref])):
+            # ini_rho=pot_rho_t_exact(SA[dref:],_temp[dref:],pres[dref:],0)
+            #calculate rho profile using reference depth
+            refdepth_rho=pot_rho_t_exact(SA[dref],_temp[dref],pres[dref],0)
+            #calculate rho -deltaT reference depth
+            refdepth_rho_deltaT =pot_rho_t_exact(SA[dref],_temp[dref]-deltaT,pres[dref],0)
+            #calculate delta sigma
+            delta_sig=np.abs(refdepth_rho_deltaT - refdepth_rho)
+            #calculate difference between rho profile and rho at reference depth
+            dens_diff=np.abs(ini_rho[dref:] - refdepth_rho)
+            #grab first index where this is true
+            if np.where(dens_diff>=delta_sig)[0].size>0:
+                
+                mld_idx=np.where(dens_diff>=delta_sig)[0][0]
+                mldU=_z[dref:][mld_idx]
+                qcU=1
+                
+            else:
+                mldU=df.depth.iloc[-1]
+                qcU=2 #profile doesn't surpass delta_sigma threshold
+        else:
+            mldU=np.nan
+            qcU= 5 #one of T S P being nan cuased related density vars to be nan       
+    else:
+        mldU=np.nan
+        qcU= 3 #profile doesn't have depth close enough to ref_depth or depth[ref_depth] is nan
+    
+    return mldU,qcU
+
+
 def gap(prange):
     """
     :param prange: pressure range of the profile
@@ -22,7 +66,43 @@ def gap(prange):
     return gap_threshold
 
 
-def profile_mld(df, mld_var='density', zvar='pressure', qi_threshold=0.5):
+def profile_mld_2way(dataframe, ref_depth=4, deltaT=0.5):
+    """
+    based off of de Boyer Montegut (2007) and Rudzin (2017)
+    dataframe: single glider profile
+    ref_depth: reference depth to calculate potential desnity at, default is 4m
+    deltaT: change in temperature threshold, default is 0.5
+    qc: 1 - profile is good and has mld
+        2 - profile doesn't surpass delta_signma threshold
+        3 - profile doesn't have a depth close enough to ref_depth
+        4 - profile is less than 10m long
+        5 - T, S, P being nan cuased related density vars to be nan
+        6 - mldL < mldU, relatively unstratified
+    """
+    _z=dataframe.depth_interpolated.values
+    _temp=dataframe.temperature.values
+    _sal=dataframe.salinity.values
+    lat=dataframe.lat.values
+    lon=dataframe.lon.values
+
+    if (~np.isnan(_sal).all()) and (~np.isnan(_temp).all()) and (~np.isnan(_z).all()):
+        mldU,qcU = calc_mld_upper(dataframe,ref_depth,deltaT,_z,_temp,_sal,lat,lon)
+        mldL,qcL = calc_mld_lower(dataframe,deltaT,_z,_temp,_sal,lat,lon)
+        if mldL < mldU:
+            qcU=6
+            qcL=6
+            mldU=dataframe.depth.iloc[-1]
+            mldL=dataframe.depth.iloc[-1]
+    else:
+        mldU=np.nan
+        mldL=np.nan
+        qcU=5 # one of T S P being nan caused related density vars to be nan
+        qcL=5
+
+    return mldU, mldL, qcU, qcL
+
+
+def profile_mld_n2(df, mld_var='density', zvar='pressure', qi_threshold=0.5):
     """
     Written by Sam Coakley and Lori Garzio, Jan 2022
     Calculates the Mixed Layer Depth (MLD) for a single profile as the depth of max Brunt‐Vaisala frequency squared

@@ -76,7 +76,7 @@ def main(fname, timevar, mldvar, zvar, qithresh):
                 else:
                     #kwargs = {'zvar': zvar}
                     kwargs = {'zvar': zvar, 'qi_threshold': qithresh}
-                    mldx, N2, qi = mldfunc.profile_mld(temp_df, **kwargs)
+                    mldx, N2, qi = mldfunc.profile_mld_n2(temp_df, **kwargs)
                     mldx = np.repeat(mldx, ll)
                     max_n2x = np.repeat(N2, ll)
 

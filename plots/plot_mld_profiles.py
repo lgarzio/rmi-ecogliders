@@ -16,8 +16,8 @@ plt.rcParams.update({'font.size': 12})
 pd.set_option('display.width', 320, "display.max_columns", 20)  # for display in pycharm console
 
 
-def main(fname):
-    savedir = os.path.join(os.path.dirname(fname), 'profiles_mld')
+def main(fname, mldvers):
+    savedir = os.path.join(os.path.dirname(fname), f'profiles_mld_{mldvers}')
     os.makedirs(savedir, exist_ok=True)
     
     ds = xr.open_dataset(fname)
@@ -78,9 +78,15 @@ def main(fname):
 
             fig.suptitle(f'{deploy.split("-")[0]} {tstr}')
 
-            axs[0].axhline(y=np.unique(group[1]['mld']), ls='--', c='k')
-            axs[1].axhline(y=np.unique(group[1]['mld']), ls='--', c='k', label='MLD')
-            axs[1].legend(fontsize=10)
+            if mldvers == 'n2':
+                axs[0].axhline(y=np.unique(group[1]['mld']), ls='--', c='k')
+                axs[1].axhline(y=np.unique(group[1]['mld']), ls='--', c='k', label='MLD')
+                axs[1].legend(fontsize=10)
+            elif mldvers == '2way':
+                axs[0].axhline(y=np.unique(group[1]['mld_upper']), ls='--', c='k')
+                axs[0].axhline(y=np.unique(group[1]['mld_lower']), ls='--', c='k')
+                axs[1].axhline(y=np.unique(group[1]['mld_upper']), ls='--', c='k')
+                axs[1].axhline(y=np.unique(group[1]['mld_lower']), ls='--', c='k')
 
             plt.subplots_adjust(top=.86, bottom=0.06)
 
@@ -90,5 +96,6 @@ def main(fname):
 
 
 if __name__ == '__main__':
-    ncfile = '/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru39-20230817T1520/ncei_pH/ru39-20230817T1520-delayed_mld.nc'
-    main(ncfile)
+    ncfile = '/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru39-20230817T1520/ncei_pH/ru39-20230817T1520-delayed_mld2way.nc'
+    mld_version = '2way'  # 'n2' '2way
+    main(ncfile, mld_version)
