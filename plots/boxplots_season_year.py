@@ -2,11 +2,12 @@
 
 """
 Author: Lori Garzio on 7/2/2025
-Last modified: 7/2/2025
+Last modified: 7/7/2025
 Boxplots of surface- and bottom-averaged glider data for inshore, midshelf, and offshore.
 The box limits extend from the lower to upper quartiles (25%, 75%), with a line at the median and a diamond symbol at
 the mean. The whiskers extend from the box by 1.5x the inter-quartile range (IQR). Circles indicate outliers.
 Notch indicates 95% CI around the median.
+Statistics: Kruskal‐Wallis analysis with Dunn post hoc
 """
 
 import os
@@ -15,7 +16,8 @@ import pandas as pd
 import xarray as xr
 import yaml
 import matplotlib.pyplot as plt
-import functions.common as cf
+from scipy.stats import kruskal
+import scikit_posthocs as sp
 plt.rcParams.update({'font.size': 12})
 pd.set_option('display.width', 320, "display.max_columns", 10)  # for display in pycharm console
 
@@ -86,6 +88,8 @@ def main(fname, save_dir):
 
     save_dir = os.path.join(save_dir, surf_bot)
     os.makedirs(save_dir, exist_ok=True)
+    summary_savedir = os.path.join(save_dir, 'summary_csv')
+    os.makedirs(os.path.join(save_dir, 'summary_csv'), exist_ok=True)
 
     years = ['2023', '2024', '2025']
     box_colors = ['tab:blue', 'tab:orange', 'k']
@@ -123,6 +127,33 @@ def main(fname, save_dir):
             inyr3 = get_variable_data(ds_season_yr3, sv, 'inshore')
             midyr3 = get_variable_data(ds_season_yr3, sv, 'midshelf')
             offyr3 = get_variable_data(ds_season_yr3, sv, 'offshore')
+
+            # perform Kruskal-Wallis test for each season with Dunn post hoc
+            labels = ['inshore_2023', 'midshelf_2023', 'offshore_2023',
+                      'inshore_2024', 'midshelf_2024', 'offshore_2024',
+                      'inshore_2025', 'midshelf_2025', 'offshore_2025']
+            kw_list = [inyr1, midyr1, offyr1, inyr2, midyr2, offyr2, inyr3, midyr3, offyr3]
+            kw_data = []
+            kw_labels = []
+            sample_sizes = []
+            for i, d in enumerate(kw_list):
+                if len(d) > 0:
+                    kw_labels.append(labels[i])
+                    kw_data.append(d)
+                    sample_sizes.append(len(d))
+
+            kw_stat, kw_p = kruskal(*kw_data, nan_policy='omit')
+            if kw_p < 0.05:
+                dunn = sp.posthoc_dunn(kw_data, p_adjust='bonferroni')
+                dunn.columns = kw_labels
+                dunn.index = kw_labels
+
+                # add sample sizes
+                dunn.loc['sample_size'] = sample_sizes
+
+                stats_filename = f'{season}_{surf_bot}_{sv}_dunn_posthoc.csv'
+                stats_savefile = os.path.join(summary_savedir, stats_filename)
+                dunn.to_csv(stats_savefile)
 
             # append summary data to dictionary
             summary_dict[sv] = dict()
@@ -198,8 +229,7 @@ def main(fname, save_dir):
         df = df.round(2)
         df = df.rename(columns={'index': 'statistic'})
         csv_filename = f'{season}_{surf_bot}_boxplot_summary.csv'
-        csv_savefile = os.path.join(save_dir, 'summary_csv', csv_filename)
-        os.makedirs(os.path.join(save_dir, 'summary_csv'), exist_ok=True)
+        csv_savefile = os.path.join(summary_savedir, csv_filename)
         df.to_csv(csv_savefile)
 
 

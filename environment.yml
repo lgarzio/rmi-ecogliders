@@ -19,3 +19,4 @@ dependencies:
   - wheel==0.45.1
   - pyco2sys==1.8.3.4
   - cool_maps==1.0.1
+  - scikit-posthocs==0.11.4
