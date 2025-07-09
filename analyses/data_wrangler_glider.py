@@ -4,7 +4,7 @@
 Author: Lori Garzio on 7/1/2025
 Last modified: 7/8/2025
 Glider data wrangler, export as NetCDF. The netcdf files have already been QC'd and processed, so this script
-is for synthesizing the surface, bottom, and maximum (chl, DO, pH) data from glider deployments and grouping them 
+is for synthesizing the surface and bottom data from glider deployments and grouping them 
 according to region (inshore, midshelf, offshore) based on NOAA strata.
 Surface data: for each profile, grabbed data between 1-5m depth took the average of that and appended to the dataset.
 Bottom data: for each profile, found the max glider depth, compared that to GEBCO bathymetry file using profile lat/lon. 
@@ -60,10 +60,8 @@ def main(fname, project, surf_bot, savedir):
         comment = "Synthesis of surface data (average of profile data from 1-5m depth) from glider-based measurements collected during the RMI ecogliders project."
     elif surf_bot == 'bottom':
         comment = "Synthesis of bottom data (average of data from the bottom 4m of each profile) from glider-based measurements collected during the RMI ecogliders project."
-    elif surf_bot == 'maximum':
-        comment = "Synthesis of profile maximum data from glider-based measurements collected during the RMI ecogliders project."
     else:
-        raise ValueError("surf_bot must be either surface, bottom or maximum")
+        raise ValueError("surf_bot must be either surface or bottom")
     
     # initialize dictionary to append surface or bottom data from glider deployments
     data = {
@@ -155,38 +153,13 @@ def main(fname, project, surf_bot, savedir):
     with open(os.path.join(configdir, 'sci_vars.yml')) as f:
         sci_vars = yaml.safe_load(f)
     
-    if surf_bot == 'maximum':
-        # remove "depth" from the data_vars dict
-        del data['data_vars']['depth']
-        
-        # add maximum data variables and the depth of the maxima to dataset
-        for sv in ['chlorophyll_a', 'oxygen_concentration_shifted_mgL', 'pH']:
-            data['data_vars'][f'{sv}_max'] = {
-                "dims": "time",
-                "data": np.array([], dtype='float32'),
-                "attrs": sci_vars[sv]
-            }
-            data['data_vars'][f'{sv}_max']['attrs']['comment'] = f"1m depth-binned average of the data collected at the {sv} {surf_bot} of each glider profile"
-
-            attrs = dict(
-                units="m",
-                long_name=f"{sci_vars[sv]['long_name']} maximum depth",
-                comment=f"Depth at which the 1m depth-binned average maximum {sv} value was recorded in the profile",
-            )
-            data['data_vars'][f'{sv}_max_depth'] = {
-                "dims": "time",
-                "data": np.array([], dtype='float32'),
-                "attrs": attrs
-            }
-        
-    else:
-        for sv, vals in sci_vars.items():
-            data['data_vars'][sv] = {
-                "dims": "time",
-                "data": np.array([], dtype='float32'),
-                "attrs": vals
-            }
-            data['data_vars'][sv]['attrs']['comment'] = f"Average of the data collected at the {surf_bot} of each glider profile"
+    for sv, vals in sci_vars.items():
+        data['data_vars'][sv] = {
+            "dims": "time",
+            "data": np.array([], dtype='float32'),
+            "attrs": vals
+        }
+        data['data_vars'][sv]['attrs']['comment'] = f"Average of the data collected at the {surf_bot} of each glider profile"
 
     # get glider data
     df = pd.read_csv(fname)
@@ -230,11 +203,8 @@ def main(fname, project, surf_bot, savedir):
                                 pdf = group.loc[group.depth_interpolated >= (maxdepth - 4)]
                             else:
                                 pdf = pd.DataFrame()
-                        elif surf_bot == 'maximum':
-                            # bin the data into 1m depth bins averages, and grab the maximum of the profile
-                            pdf = cf.depth_bin(group, depth_var='depth_interpolated', depth_min=0, depth_max=maxdepth, stride=1)
                         else:
-                            raise ValueError("surf_bot must be either surface, bottom or maximum")
+                            raise ValueError("surf_bot must be either surface or bottom")
 
                         if len(pdf) > 0:
                             # determine the shelf location
@@ -269,58 +239,14 @@ def main(fname, project, surf_bot, savedir):
                                         avg = np.nanmean(pdf[v].values)
                                         data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], avg)
                                     except KeyError:
-                                        if surf_bot == 'maximum':
-                                            if v.endswith('_max'):
-                                                # grab the maximum value from the profile
-                                                tempv = v.replace('_max', '')
-                                                try:
-                                                    max_val = np.nanmax(pdf[tempv])
-                                                except KeyError:
-                                                    if tempv == 'oxygen_concentration_shifted_mgL':
-                                                        try:
-                                                            max_val = np.nanmax(pdf['oxygen_concentration_shifted'] * 32 / 1000)
-                                                        except KeyError:
-                                                            max_val = np.nan
-                                                    else:
-                                                        max_val = np.nan
-                                                data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], max_val)
-                                            elif v.endswith('_max_depth'):
-                                                # grab the depth of the maximum value
-                                                tempv = v.replace('_max_depth', '')
-
-                                                # figure out if the variable is there
-                                                try:
-                                                    tempv_data = pdf[tempv]
-                                                except KeyError:
-                                                    if tempv == 'oxygen_concentration_shifted_mgL':
-                                                        try:
-                                                            tempv_data = pdf['oxygen_concentration_shifted']
-                                                            tempv = 'oxygen_concentration_shifted'
-                                                        except KeyError:
-                                                            tempv_data = np.nan
-                                                    else:
-                                                        tempv_data = np.nan
-                                                
-                                                # if the maximum value is nan, then the depth is also nan
-                                                if np.isnan(np.nanmax(tempv_data)):
-                                                    vmax_depth = np.nan
-                                               
-                                               # otherwise, find the depth at the variable maximum
-                                                else:
-                                                    try:
-                                                        vmax_depth = pdf.loc[pdf[tempv] == np.nanmax(pdf[tempv])].depth_interpolated.values[0]
-                                                    except KeyError:
-                                                        vmax_depth = np.nan
-                                                data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], vmax_depth)
-                                        else:
-                                            if v == 'oxygen_concentration_shifted_mgL':
-                                                try:
-                                                    avg = np.nanmean(pdf['oxygen_concentration_shifted'].values * 32 / 1000)  # convert from umol/L to mg/L
-                                                    data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], avg)
-                                                except KeyError:
-                                                    data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], np.nan)
-                                            else:
+                                        if v == 'oxygen_concentration_shifted_mgL':
+                                            try:
+                                                avg = np.nanmean(pdf['oxygen_concentration_shifted'].values * 32 / 1000)  # convert from umol/L to mg/L
+                                                data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], avg)
+                                            except KeyError:
                                                 data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], np.nan)
+                                        else:
+                                            data['data_vars'][v]['data'] = np.append(data['data_vars'][v]['data'], np.nan)
                 print(f'Finished {deployment}')
 
     # save data as netcdf
@@ -367,6 +293,6 @@ def main(fname, project, surf_bot, savedir):
 if __name__ == '__main__':
     csv_summary = '/Users/garzio/Documents/rucool/Saba/RMI/glider_deployments.csv'
     project = 'RMI'
-    surf_bot = 'maximum'  # grab surface, bottom or maximum data
+    surf_bot = 'surface'  # grab surface or bottom data
     savedir = '/Users/garzio/Documents/rucool/Saba/RMI/plots_for_2025_report/data'
     main(csv_summary, project, surf_bot, savedir)
