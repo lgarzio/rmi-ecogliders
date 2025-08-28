@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 6/25/2025
-Last modified: 6/25/2025
+Last modified: 8/28/2025
 Plot all RMI glider tracks
 """
 
@@ -13,10 +13,11 @@ import cool_maps.plot as cplt
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import functions.common as cf
+import functions.plotting as pf
 plt.rcParams.update({'font.size': 13})
 
 
-def main(fname, project, savedir, add_strata):
+def main(fname, project, savedir, add_strata, add_wea, extent):
     df = pd.read_csv(fname)
 
     data = dict()
@@ -37,8 +38,6 @@ def main(fname, project, savedir, add_strata):
                 data[deploy] = dict()
                 data[deploy]['lon'] = coordf.lon.values
                 data[deploy]['lat'] = coordf.lat.values
-
-    extent = [-75.5, -71.5, 38, 41]
     
     kwargs = dict()
     kwargs['figsize'] = (9, 8)
@@ -50,11 +49,20 @@ def main(fname, project, savedir, add_strata):
     kwargs['bathymetry_method'] = 'topo_log'
     fig, ax = cplt.create(extent, **kwargs)
 
+    if add_wea:
+        lease = '/Users/garzio/Documents/rucool/bpu/wrf/lease_areas/boem-renewable-energy-shapefiles_0/Offshore_Wind_Leases_outlines.shp'
+        kwargs = dict()
+        kwargs['edgecolor'] = 'gray'
+        kwargs['facecolor'] = '#afb0ae'  # light gray
+        kwargs['zorder'] = 10
+        kwargs['alpha'] = 0.8
+        pf.map_add_shapefile_outlines(ax, lease, **kwargs)
+
     for deploy, coords in data.items():
         ax.scatter(coords['lon'], coords['lat'], color='magenta', marker='.', s=6, 
                    transform=ccrs.PlateCarree(), zorder=30)
     
-    sfilename = 'RMI_glider_tracks.png'
+    sfilename = f'{project}_glider_tracks.png'
 
     if add_strata:
         kwargs = dict()
@@ -63,8 +71,9 @@ def main(fname, project, savedir, add_strata):
         for key, values in strata_mapping.items():
             outside_poly = values['poly']
             xx, yy = outside_poly.exterior.xy
-            ax.plot(xx, yy, color=values['color'], lw=4, transform=ccrs.PlateCarree(), zorder=20)
-        sfilename = 'RMI_glider_tracks_strata.png'
+            ax.plot(xx, yy, color=values['color'], lw=4, transform=ccrs.PlateCarree(), zorder=values['zorder'],
+                    label=f'{key} stratum')
+        sfilename = f'{project}_glider_tracks_strata.png'
     
     sfile = os.path.join(savedir, sfilename)
 
@@ -78,4 +87,6 @@ if __name__ == '__main__':
     project = 'RMI'
     savedir = '/Users/garzio/Documents/rucool/Saba/RMI/plots_for_2025_report/maps'
     add_strata = True  # add NOAA strata to the plot, True or False
-    main(csv_summary, project, savedir, add_strata)
+    add_wea = True  # add Wind Energy Areas to the plot, True or False
+    extent = [-75, -72, 38.4, 40.7]  # [-75.5, -71.5, 38, 41]  [-75, -72, 38.4, 40.8]
+    main(csv_summary, project, savedir, add_strata, add_wea, extent)

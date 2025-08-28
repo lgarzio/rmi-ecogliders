@@ -2,13 +2,14 @@
 
 """
 Author: Lori Garzio on 6/24/2025
-Last modified: 6/24/2025
+Last modified: 8/28/2025
 """
 
 import numpy as np
 import pandas as pd
 from cartopy.io.shapereader import Reader
 from shapely.ops import unary_union
+from shapely.geometry import Polygon
 
 
 def depth_bin(dataframe, depth_var='depth', depth_min=0, depth_max=None, stride=1):
@@ -44,21 +45,37 @@ def return_noaa_polygons(extend=False):
         inshore=dict(
             snum=[3150, 3160, 3170, 3180, 3190, 3200, 3120, 3130, 3140, 3100, 3090, 3110, 3060, 3070, 3080],
             color='#9e36d7ff',
+            zorder=20,
             poly=[]
         ),  # purple
-        midshelf=dict(snum=[1730, 1010], color='#d7369eff', poly=[]),  # pink
-        offshore=dict(snum=[1740, 1750, 1760, 1020, 1030, 1040], color='#95c983ff', poly=[])  # green
+        midshelf=dict(snum=[1730, 1010], color='#d7369eff', zorder=19, poly=[]),  # pink
+        offshore=dict(snum=[1740, 1750, 1760, 1020, 1030, 1040], zorder=18, color='#95c983ff', poly=[])  # green
     )
 
     if extend:
         strata_mapping = dict(
             inshore=dict(
-                snum=[3150, 3160, 3170, 3180, 3190, 3200, 3230, 3120, 3130, 3140, 3100, 3090, 3110, 3060, 3070, 3080],
-                color='#440154',
+                #snum=[3150, 3160, 3170, 3180, 3190, 3200, 3230, 3120, 3130, 3140, 3100, 3090, 3110, 3060, 3070, 3080],
+                snum=[3120, 3130, 3140, 3100, 3090, 3110, 3060, 3070, 3080, 3150, 3160, 3170, 3180, 3190, 3200, 3210, 
+                      3220, 3230, 3240, 3250, 3260, 3270, 3280, 3290, 3300, 3310, 3320, 3030, 3050, 3040, 3010, 3020, 3450],
+                color='#440154',  # purple
+                zorder=20,
                 poly=[]
-            ),  # purple
-            midshelf=dict(snum=[1730, 1010, 1690], color='#2A788E', poly=[]),  # blue
-            offshore=dict(snum=[1740, 1750, 1760, 1020, 1030, 1040, 1700, 1710, 1720], color='#7AD151', poly=[])  # green
+            ), 
+            midshelf=dict(
+                #snum=[1730, 1010, 1690],
+                snum=[1010, 1730, 1690, 1050],
+                color='cyan',  # '#2A788E' blue
+                zorder=19, 
+                poly=[]
+            ),  
+            offshore=dict(
+                #snum=[1740, 1750, 1760, 1020, 1030, 1040, 1700, 1710, 1720], 
+                snum=[1020, 1030, 1040, 1740, 1750, 1760, 1700, 1710, 1720, 1060, 1070, 1080],
+                color='#7AD151',  # green
+                zorder=18, 
+                poly=[]
+            ) 
         )
 
     # combine regions to NYB inshore, midshelf, offshore
@@ -68,6 +85,11 @@ def return_noaa_polygons(extend=False):
             if sl.attributes['STRATA'] in sm['snum']:
                 poly = sl.geometry
                 polys.append(poly)
+        if region_code == 'offshore':  # add a little extra polygon to the offshore region
+            lon = [-72.85, -72.85, -73.2, -73.2, -72.85]
+            lat = [38.86, 38.75, 38.75, 38.86, 38.86]
+            extra_poly = Polygon(zip(lon, lat))
+            polys.append(extra_poly)
 
         outside_poly = unary_union(polys)
         strata_mapping[region_code]['poly'] = outside_poly
