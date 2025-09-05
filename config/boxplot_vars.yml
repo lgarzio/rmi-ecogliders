@@ -6,6 +6,7 @@ temperature:
   bottom:
     ymin: 3.9
     ymax: 23
+  label: Temperature
 salinity:
   surface:
     ymin: 28
@@ -13,6 +14,7 @@ salinity:
   bottom:
     ymin: 28
     ymax: 36
+  label: Salinity (PSU)
 chlorophyll_a:
   surface:
     ymin: -0.5
@@ -20,6 +22,7 @@ chlorophyll_a:
   bottom:
     ymin: -0.25
     ymax: 7
+  label: Chlorophyll a (ug/L)
 oxygen_concentration_shifted_mgL:
   surface:
     ymin: 5.5
@@ -27,6 +30,7 @@ oxygen_concentration_shifted_mgL:
   bottom:
     ymin: 2.8
     ymax: 11
+  label: Oxygen (mg/L)
 pH:
   surface:
     ymin: 7.75
@@ -34,6 +38,7 @@ pH:
   bottom:
     ymin: 7.5
     ymax: 8.3
+  label: pH
 aragonite_saturation_state:
   surface:
     ymin: 1.2
@@ -41,6 +46,7 @@ aragonite_saturation_state:
   bottom:
     ymin: 0.6
     ymax: 2.7
+  label: Omega
 total_alkalinity:
   surface:
     ymin: 1950
@@ -48,3 +54,4 @@ total_alkalinity:
   bottom:
     ymin: 2080
     ymax: 2350
+  label: Total Alkalinity
