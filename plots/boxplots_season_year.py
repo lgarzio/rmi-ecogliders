@@ -18,7 +18,7 @@ import yaml
 import matplotlib.pyplot as plt
 from scipy.stats import kruskal
 import scikit_posthocs as sp
-plt.rcParams.update({'font.size': 12})
+plt.rcParams.update({'font.size': 14})
 pd.set_option('display.width', 320, "display.max_columns", 10)  # for display in pycharm console
 
 
@@ -33,6 +33,7 @@ def build_summary(data, summary_dict, summary_dict_key):
         summary_dict[summary_dict_key] = dict(count=len(data),
                                               median=np.nan,
                                               mean=np.nan,
+                                              stdev=np.nan,
                                               lower_quartile=np.nan,
                                               upper_quartile=np.nan,
                                               lower_whisker=np.nan,
@@ -46,6 +47,7 @@ def build_summary(data, summary_dict, summary_dict_key):
         summary_dict[summary_dict_key] = dict(count=int(len(data)),
                                               median=np.round(np.nanmedian(data), 4),
                                               mean=np.round(np.nanmean(data), 4),
+                                              stdev=np.round(np.nanstd(data), 4),
                                               lower_quartile=np.round(lq, 4),
                                               upper_quartile=np.round(uq, 4),
                                               lower_whisker=data[data >= lq - 1.5 * iqr].min(),
@@ -86,7 +88,7 @@ def main(fname, save_dir):
     ds = ds.swap_dims({'time': 'shelf_location'})
     surf_bot = fname.split('/')[-1].split('_')[2]
 
-    save_dir = os.path.join(save_dir, surf_bot)
+    save_dir = os.path.join(save_dir, f'{surf_bot}')
     os.makedirs(save_dir, exist_ok=True)
     summary_savedir = os.path.join(save_dir, 'summary_csv')
     os.makedirs(os.path.join(save_dir, 'summary_csv'), exist_ok=True)
@@ -100,7 +102,12 @@ def main(fname, save_dir):
     parent_dir = os.path.dirname(root_dir)
     configdir = os.path.join(parent_dir, 'config')
 
-    with open(os.path.join(configdir, 'boxplot_vars.yml')) as f:
+    if surf_bot == 'chlamax':
+        yamlfile = 'boxplot_vars_chlamax.yml'
+    else:
+        yamlfile = 'boxplot_vars.yml'
+    
+    with open(os.path.join(configdir, yamlfile)) as f:
         sci_vars = yaml.safe_load(f)
 
     # initialize empty dictionary for summary to export
@@ -110,7 +117,6 @@ def main(fname, save_dir):
     for season in ['Winter', 'Spring', 'Summer', 'Fall']:
         season_idx = np.where(ds.season_year.str.contains(season))[0]
         ds_season = ds.isel(shelf_location=season_idx)
-        unique_seasonyears = np.unique(ds_season.season_year)
         yr1_idx = np.where(ds_season.season_year.str.contains('2023'))[0]
         yr2_idx = np.where(ds_season.season_year.str.contains('2024'))[0]
         yr3_idx = np.where(ds_season.season_year.str.contains('2025'))[0]
@@ -143,6 +149,8 @@ def main(fname, save_dir):
                     sample_sizes.append(len(d))
 
             kw_stat, kw_p = kruskal(*kw_data, nan_policy='omit')
+            stats_filename = f'{season}_{surf_bot}_{sv}_dunn_posthoc.csv'
+            stats_savefile = os.path.join(summary_savedir, stats_filename)
             if kw_p < 0.05:
                 dunn = sp.posthoc_dunn(kw_data, p_adjust='bonferroni')
                 dunn.columns = kw_labels
@@ -150,10 +158,11 @@ def main(fname, save_dir):
 
                 # add sample sizes
                 dunn.loc['sample_size'] = sample_sizes
-
-                stats_filename = f'{season}_{surf_bot}_{sv}_dunn_posthoc.csv'
-                stats_savefile = os.path.join(summary_savedir, stats_filename)
                 dunn.to_csv(stats_savefile)
+            else:
+                text = dict(test_not_significant=f'Kruskal-Wallis test not significant for {season} {surf_bot} {sv} p = {kw_p:.3f}')
+                df = pd.DataFrame.from_dict(text, orient='index', columns=['1'])
+                df.to_csv(stats_savefile)
 
             # append summary data to dictionary
             summary_dict[sv] = dict()
@@ -200,18 +209,33 @@ def main(fname, save_dir):
             # ax.set_xticklabels(['Surface', 'Bottom'])
             ax.set_xticks([2, 6, 10])
             ax.set_xticklabels(['Inshore', 'Midshelf', 'Offshore'])
-            ax.set_ylabel(f'{ds[sv].attrs['long_name']} ({ds[sv].attrs['units']})')
+            # try:
+            #     ax.set_ylabel(f'{ds[sv].attrs['long_name']} ({ds[sv].attrs['units']})')
+            # except KeyError:
+            #     ax.set_ylabel(f'{sv} ({ds[sv].attrs['units']})')
+            if sv == 'temperature':
+                ylab = 'Temperature ({})'.format(r'$\rm ^oC$')
+            else:
+                ylab = info['label']
+            ax.set_ylabel(ylab)
 
             try:
                 ylims = [info[surf_bot]['ymin'], info[surf_bot]['ymax']]
-            except KeyError:
+            except (KeyError, TypeError):
                 ylims = ax.get_ylim()
             ax.set_ylim(ylims)
             ax.vlines(4, ylims[0], ylims[1], colors='dimgray', alpha=.5)
             ax.vlines(8, ylims[0], ylims[1], colors='dimgray', alpha=.5)
 
             ax.set_xlim([0, 12])
-            ax.set_title(f'{season}: {surf_bot} {ds[sv].attrs['long_name']}')
+            # try:
+            #     ax.set_title(f'{season}: {surf_bot} {ds[sv].attrs['long_name']}')
+            # except KeyError:
+            #     ax.set_title(f'{season}: {surf_bot} {sv}')
+            if surf_bot == 'chlamax':
+                ax.set_title(f'{season} (chla-max)')
+            else:
+                ax.set_title(f'{season} ({surf_bot})')
             sfilename = f'boxplot_{sv}_{season}_{surf_bot}.png'
             sfile = os.path.join(save_dir, sfilename)
             plt.savefig(sfile, dpi=300)

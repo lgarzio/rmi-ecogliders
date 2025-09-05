@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 6/27/2025
-Last modified: 6/27/2025
+Last modified: 7/15/2025
 Plot cross-sections of data from groups of glider deployments with shared axes.
 
 """
@@ -42,23 +42,26 @@ def main(savedir):
     #                     fall_max=[])
 
     # plot cross sections of all deployments: temperature, chl, DO, pH, omega
-    fig, axs = plt.subplots(5, 3, figsize=(16, 16), sharex='col', sharey=True)
+    fig, axs = plt.subplots(6, 3, figsize=(16, 18), sharex='col', sharey=True)
     plt.subplots_adjust(top=.96, bottom=0.08, right=.95, left=.06, hspace=0.05, wspace=0.05)
     ax1 = axs[0, 0]  # spring temperature
     ax2 = axs[0, 1]  # latespring temperature
     ax3 = axs[0, 2]  # summer temperature
-    ax5 = axs[1, 0]  # spring chl
-    ax6 = axs[1, 1]  # latespring chl
-    ax7 = axs[1, 2]  # summer chl
-    ax9 = axs[2, 0]  # spring DO - not deployed
-    ax10 = axs[2, 1]  # latespring DO
-    ax11 = axs[2, 2]  # summer DO
-    ax13 = axs[3, 0]  # spring pH
-    ax14 = axs[3, 1]  # latespring pH
-    ax15 = axs[3, 2]  # summer pH
-    ax17 = axs[4, 0]  # spring omega
-    ax18 = axs[4, 1]  # latespring omega
-    ax19 = axs[4, 2]  # summer omega
+    ax5 = axs[1, 0]  # spring salinity
+    ax6 = axs[1, 1]  # latespring salinity
+    ax7 = axs[1, 2]  # summer salinity
+    ax9 = axs[2, 0]  # spring chl
+    ax10 = axs[2, 1]  # latespring chl
+    ax11 = axs[2, 2]  # summer chl
+    ax13 = axs[3, 0]  # spring DO - not deployed
+    ax14 = axs[3, 1]  # latespring DO
+    ax15 = axs[3, 2]  # summer DO
+    ax17 = axs[4, 0]  #  spring pH
+    ax18 = axs[4, 1]  #  latespring pH
+    ax19 = axs[4, 2]  #  summer pH
+    ax20 = axs[5, 0]  # spring omega
+    ax21 = axs[5, 1]   # latespring omega
+    ax22 = axs[5, 2]  # summer omega
 
     # plot temperature
     kwargs = dict()
@@ -73,7 +76,7 @@ def main(savedir):
 
     pf.xsection(fig, ax1, spring_ph.time.values, spring_ph.depth_interpolated.values, spring_ph.temperature.values, **kwargs)  # spring temperature
 
-    kwargs['title'] = 'Late Spring 2024'
+    kwargs['title'] = 'Early Summer 2024'
     kwargs['ylabel'] = None
     pf.xsection(fig, ax2, latespring.time.values, latespring.depth_interpolated.values, latespring.temperature.values, **kwargs)  # latespring temperature
 
@@ -90,6 +93,23 @@ def main(savedir):
     # summary_dict['fall_min'].append(np.round(np.nanmin(ds_fall_ph.temperature.values), 2))
     # summary_dict['fall_max'].append(np.round(np.nanmax(ds_fall_ph.temperature.values), 2))
 
+    # plot salinity
+    kwargs = dict()
+    kwargs['clabel'] = 'Salinity (PSU)'
+    kwargs['cmap'] = cmo.cm.haline
+    kwargs['xlabel'] = None
+    kwargs['xticklabels'] = None
+    kwargs['colorbar'] = None
+    kwargs['vlims'] = [29, 35]
+
+    pf.xsection(fig, ax5, spring_ph.time.values, spring_ph.depth_interpolated.values, spring_ph.salinity.values, **kwargs)  # spring chl
+
+    kwargs['ylabel'] = None
+    pf.xsection(fig, ax6, latespring.time.values, latespring.depth_interpolated.values, latespring.salinity.values, **kwargs)  # latespring chl
+    
+    kwargs['colorbar'] = True
+    pf.xsection(fig, ax7, summer_ph.time.values, summer_ph.depth_interpolated.values, summer_ph.salinity.values, **kwargs)  # summer chl
+
     # plot chl
     kwargs = dict()
     kwargs['clabel'] = 'Chlorophyll a (ug/L)'
@@ -99,13 +119,13 @@ def main(savedir):
     kwargs['colorbar'] = None
     kwargs['vlims'] = [2, 10]
 
-    pf.xsection(fig, ax5, spring_ph.time.values, spring_ph.depth_interpolated.values, spring_ph.chlorophyll_a.values, **kwargs)  # spring chl
+    pf.xsection(fig, ax9, spring_ph.time.values, spring_ph.depth_interpolated.values, spring_ph.chlorophyll_a.values, **kwargs)  # spring chl
 
     kwargs['ylabel'] = None
-    pf.xsection(fig, ax6, latespring.time.values, latespring.depth_interpolated.values, latespring.chlorophyll_a.values, **kwargs)  # latespring chl
+    pf.xsection(fig, ax10, latespring.time.values, latespring.depth_interpolated.values, latespring.chlorophyll_a.values, **kwargs)  # latespring chl
     
     kwargs['colorbar'] = True
-    pf.xsection(fig, ax7, summer_ph.time.values, summer_ph.depth_interpolated.values, summer_ph.chlorophyll_a.values, **kwargs)  # summer chl
+    pf.xsection(fig, ax11, summer_ph.time.values, summer_ph.depth_interpolated.values, summer_ph.chlorophyll_a.values, **kwargs)  # summer chl
 
     # print('chl min/max')
     # print(f'gapfill {np.nanmin(ds_gapfill.chlorophyll_a.values)} / {np.nanmax(ds_gapfill.chlorophyll_a.values)}')
@@ -133,16 +153,16 @@ def main(savedir):
     kwargs['vlims'] = [2, 9]
     kwargs['date_fmt'] = '%m-%d'
 
-    pf.xsection(fig, ax9, spring_do.time.values, spring_do.depth_interpolated.values, spring_do.oxygen_concentration_shifted_mgL.values, **kwargs)  # spring DO
+    pf.xsection(fig, ax13, spring_do.time.values, spring_do.depth_interpolated.values, spring_do.oxygen_concentration_shifted_mgL.values, **kwargs)  # spring DO
 
     kwargs['ylabel'] = None
     kwargs['xticklabels'] = None
     #lsdo_mgL = latespring.oxygen_concentration_shifted.values * 32 / 1000  # convert from umol/L to mg/L
-    pf.xsection(fig, ax10, latespring.time.values, latespring.depth_interpolated.values, latespring.oxygen_concentration_shifted_mgL.values, **kwargs)  # latespring DO
+    pf.xsection(fig, ax14, latespring.time.values, latespring.depth_interpolated.values, latespring.oxygen_concentration_shifted_mgL.values, **kwargs)  # latespring DO
 
     kwargs['colorbar'] = True
     #summerdo_mgL = summer_do.oxygen_concentration_shifted.values * 32 / 1000  # convert from umol/L to mg/L
-    pf.xsection(fig, ax11, summer_do.time.values, summer_do.depth_interpolated.values, summer_do.oxygen_concentration_shifted_mgL.values, **kwargs)  # summer DO
+    pf.xsection(fig, ax15, summer_do.time.values, summer_do.depth_interpolated.values, summer_do.oxygen_concentration_shifted_mgL.values, **kwargs)  # summer DO
 
     # print('DO min/max')
     # print(f'gapfill: none')
@@ -163,13 +183,13 @@ def main(savedir):
     kwargs['colorbar'] = None
     kwargs['vlims'] = [7.6, 8.1]
 
-    pf.xsection(fig, ax13, spring_ph.time.values, spring_ph.depth_interpolated.values, spring_ph.pH.values, **kwargs)  # spring pH
+    pf.xsection(fig, ax17, spring_ph.time.values, spring_ph.depth_interpolated.values, spring_ph.pH.values, **kwargs)  # spring pH
 
     kwargs['ylabel'] = None
-    pf.xsection(fig, ax14, latespring.time.values, latespring.depth_interpolated.values, latespring.pH.values, **kwargs)  # latespring pH
+    pf.xsection(fig, ax18, latespring.time.values, latespring.depth_interpolated.values, latespring.pH.values, **kwargs)  # latespring pH
 
     kwargs['colorbar'] = True
-    pf.xsection(fig, ax15, summer_ph.time.values, summer_ph.depth_interpolated.values, summer_ph.pH.values, **kwargs)  # summer pH
+    pf.xsection(fig, ax19, summer_ph.time.values, summer_ph.depth_interpolated.values, summer_ph.pH.values, **kwargs)  # summer pH
 
     # print('pH min/max')
     # print(f'gapfill {np.nanmin(ds_gapfill.pH.values)} / {np.nanmax(ds_gapfill.pH.values)}')
@@ -191,13 +211,13 @@ def main(savedir):
     kwargs['vlims'] = [0.7, 3]
     kwargs['date_fmt'] = '%m-%d'
 
-    pf.xsection(fig, ax17, spring_ph.time.values, spring_ph.depth_interpolated.values, spring_ph.aragonite_saturation_state.values, **kwargs)  # spring omega
+    pf.xsection(fig, ax20, spring_ph.time.values, spring_ph.depth_interpolated.values, spring_ph.aragonite_saturation_state.values, **kwargs)  # spring omega
 
     kwargs['ylabel'] = None
-    pf.xsection(fig, ax18, latespring.time.values, latespring.depth_interpolated.values, latespring.aragonite_saturation_state.values, **kwargs)  # latespring omega
+    pf.xsection(fig, ax21, latespring.time.values, latespring.depth_interpolated.values, latespring.aragonite_saturation_state.values, **kwargs)  # latespring omega
 
     kwargs['colorbar'] = True
-    pf.xsection(fig, ax19, summer_ph.time.values, summer_ph.depth_interpolated.values, summer_ph.aragonite_saturation_state.values, **kwargs)  # summer omega
+    pf.xsection(fig, ax22, summer_ph.time.values, summer_ph.depth_interpolated.values, summer_ph.aragonite_saturation_state.values, **kwargs)  # summer omega
 
     # print('omega min/max')
     # print(f'gapfill {np.nanmin(ds_gapfill.aragonite_saturation_state.values)} / {np.nanmax(ds_gapfill.aragonite_saturation_state.values)}')
@@ -209,11 +229,11 @@ def main(savedir):
     # summary_dict['fall_max'].append(np.round(np.nanmax(ds_fall_ph.aragonite_saturation_state.values), 2))
 
     # format x-axis
-    ax17.tick_params(axis='x', rotation=45)
-    ax18.tick_params(axis='x', rotation=45)
-    ax19.tick_params(axis='x', rotation=45)
+    ax20.tick_params(axis='x', rotation=45)
+    ax21.tick_params(axis='x', rotation=45)
+    ax22.tick_params(axis='x', rotation=45)
 
-    #ax1.invert_yaxis()
+    ax1.invert_yaxis()
     plt.subplots_adjust(left=0.06, right=0.93, bottom=0.1, top=0.9)
 
     sname = os.path.join(savedir, 'multipanel_xsection_2024-spring-summer.png')

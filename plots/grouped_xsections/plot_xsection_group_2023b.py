@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 6/27/2025
-Last modified: 6/27/2025
+Last modified: 7/15/2025
 Plot cross-sections of data from groups of glider deployments with shared axes.
 
 """
@@ -23,16 +23,15 @@ plt.rcParams.update({'font.size': 17})
 def main(savedir):
     os.makedirs(savedir, exist_ok=True)
 
-    # spring_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru39-20240429T1522/ncei_pH/ru39-20240429T1522-delayed_mld.nc')
-    # spring_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru40-20240429T1528/ncei_dmon/ru40-20240429T1528-delayed_mld.nc')
-    # latespring =  xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru43-20240612T1658/ncei_pH/ru43-20240612T1658-delayed_mld.nc') 
-    # summer_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru39-20240723T1442/ncei_pH/ru39-20240723T1442-delayed_mld.nc')
-    # summer_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru40-20240723T1600/ncei_dmon/ru40-20240723T1600-delayed_mld.nc')
-    latesummer = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru43-20240904T1539/ncei_pH/ru43-20240904T1539-delayed_mld.nc')
-    fall_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru39-20241021T1717/ncei_pH/ru39-20241021T1717-delayed_mld.nc')
-    fall_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru40-20241021T1654/ncei_dmon/ru40-20241021T1654-delayed_mld.nc')
-    winter_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2025/ru39-20250226T1700/ncei_pH/ru39-20250226T1700-delayed_mld.nc')
-    winter_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2025/ru40-20250226T1704/ncei_dmon/ru40-20250226T1704-delayed_mld.nc')
+    # spring = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru39-20230420T1636/ncei_pH/ru39-20230420T1636-delayed_mld.nc')
+    # latespring =  xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru40-20230629T1430/ncei_dmon/ru40-20230629T1430-delayed_mld.nc') 
+    # summer_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru39-20230817T1520/ncei_pH/ru39-20230817T1520-delayed_mld.nc')  # pH only
+    # summer_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru40-20230817T1522/ncei_dmon/ru40-20230817T1522-delayed_mld.nc')  # DO only
+    latesummer = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru34-20230920T1506/ncei_pH/ru34-20230920T1506-delayed_mld.nc')
+    fall_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru39-20231103T1413/ncei_pH/ru39-20231103T1413-delayed_mld.nc')  # pH only
+    fall_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2023/ru40-20231103T1421/ncei_dmon/ru40-20231103T1421-20231115T1612-delayed_mld_combined.nc')  # DO only
+    winter_ph = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru39-20240215T1646/ncei_pH/ru39-20240215T1646-delayed_mld.nc')
+    winter_do = xr.open_dataset('/Users/garzio/Documents/rucool/Saba/gliderdata/2024/ru40-20240215T1642/ncei_dmon/ru40-20240215T1642-delayed_mld.nc')  # DO only
 
     # # make summary dataframe to export as csv
     # summary_dict = dict(variable=['temperature', 'chl', 'DO_mgL', 'pH', 'omega'],
@@ -42,23 +41,26 @@ def main(savedir):
     #                     fall_max=[])
 
     # plot cross sections of all deployments: temperature, chl, DO, pH, omega
-    fig, axs = plt.subplots(5, 3, figsize=(16, 16), sharex='col', sharey=True)
+    fig, axs = plt.subplots(6, 3, figsize=(16, 18), sharex='col', sharey=True)
     plt.subplots_adjust(top=.96, bottom=0.08, right=.95, left=.06, hspace=0.05, wspace=0.05)
     ax1 = axs[0, 0]  # latesummer temperature
     ax2 = axs[0, 1]  # fall temperature
     ax3 = axs[0, 2]  # winter temperature
-    ax5 = axs[1, 0]  # latesummer chl
-    ax6 = axs[1, 1]  # fall chl
-    ax7 = axs[1, 2]  # winter chl
-    ax9 = axs[2, 0]  # latesummer DO
-    ax10 = axs[2, 1]  # fall DO
-    ax11 = axs[2, 2]  # winter DO
-    ax13 = axs[3, 0]  # latesummer pH
-    ax14 = axs[3, 1]  # fall pH
-    ax15 = axs[3, 2]  # winter pH
-    ax17 = axs[4, 0]  # latesummer omega
-    ax18 = axs[4, 1]  # fall omega
-    ax19 = axs[4, 2]  # winter omega
+    ax5 = axs[1, 0]  # latesummer salinity
+    ax6 = axs[1, 1]  # fall salinity
+    ax7 = axs[1, 2]  # winter salinity
+    ax9 = axs[2, 0]  # latesummer chl
+    ax10 = axs[2, 1]  # fall chl
+    ax11 = axs[2, 2]  # winter chl
+    ax13 = axs[3, 0]  # latesummer DO
+    ax14 = axs[3, 1]  # fall DO
+    ax15 = axs[3, 2]  # winter DO
+    ax17 = axs[4, 0]  # latesummer pH
+    ax18 = axs[4, 1]  # fall pH
+    ax19 = axs[4, 2]  # winter pH
+    ax20 = axs[5, 0]  # latesummer omega
+    ax21 = axs[5, 1]   # fall omega
+    ax22 = axs[5, 2]  # winter omega
 
     # plot temperature
     kwargs = dict()
@@ -68,16 +70,16 @@ def main(savedir):
     kwargs['xticklabels'] = None
     kwargs['colorbar'] = None
     kwargs['vlims'] = [7, 23]
-    kwargs['title'] = 'Late Summer 2024'
+    kwargs['title'] = 'Early Fall 2023'
     kwargs['ylims'] = [-4, 105]
 
     pf.xsection(fig, ax1, latesummer.time.values, latesummer.depth_interpolated.values, latesummer.temperature.values, **kwargs)
 
-    kwargs['title'] = 'Fall 2024'
+    kwargs['title'] = 'Fall 2023'
     kwargs['ylabel'] = None
     pf.xsection(fig, ax2, fall_ph.time.values, fall_ph.depth_interpolated.values, fall_ph.temperature.values, **kwargs)
 
-    kwargs['title'] = 'Winter 2025'
+    kwargs['title'] = 'Winter 2024'
     kwargs['ylabel'] = None
     kwargs['colorbar'] = True
     pf.xsection(fig, ax3, winter_ph.time.values, winter_ph.depth_interpolated.values, winter_ph.temperature.values, **kwargs)
@@ -90,6 +92,23 @@ def main(savedir):
     # summary_dict['fall_min'].append(np.round(np.nanmin(ds_fall_ph.temperature.values), 2))
     # summary_dict['fall_max'].append(np.round(np.nanmax(ds_fall_ph.temperature.values), 2))
 
+     # plot salinity
+    kwargs = dict()
+    kwargs['clabel'] = 'Salinity (PSU)'
+    kwargs['cmap'] = cmo.cm.haline
+    kwargs['xlabel'] = None
+    kwargs['xticklabels'] = None
+    kwargs['colorbar'] = None
+    kwargs['vlims'] = [29, 35]
+
+    pf.xsection(fig, ax5, latesummer.time.values, latesummer.depth_interpolated.values, latesummer.salinity.values, **kwargs)  # latesummer chl
+
+    kwargs['ylabel'] = None
+    pf.xsection(fig, ax6, fall_ph.time.values, fall_ph.depth_interpolated.values, fall_ph.salinity.values, **kwargs)  # fall chl
+    
+    kwargs['colorbar'] = True
+    pf.xsection(fig, ax7, winter_ph.time.values, winter_ph.depth_interpolated.values, winter_ph.salinity.values, **kwargs)  # winter chl    
+
     # plot chl
     kwargs = dict()
     kwargs['clabel'] = 'Chlorophyll a (ug/L)'
@@ -99,13 +118,13 @@ def main(savedir):
     kwargs['colorbar'] = None
     kwargs['vlims'] = [2, 10]
 
-    pf.xsection(fig, ax5, latesummer.time.values, latesummer.depth_interpolated.values, latesummer.chlorophyll_a.values, **kwargs)  # latesummer chl
+    pf.xsection(fig, ax9, latesummer.time.values, latesummer.depth_interpolated.values, latesummer.chlorophyll_a.values, **kwargs)  # latesummer chl
 
     kwargs['ylabel'] = None
-    pf.xsection(fig, ax6, fall_ph.time.values, fall_ph.depth_interpolated.values, fall_ph.chlorophyll_a.values, **kwargs)  # fall chl
+    pf.xsection(fig, ax10, fall_ph.time.values, fall_ph.depth_interpolated.values, fall_ph.chlorophyll_a.values, **kwargs)  # fall chl
     
     kwargs['colorbar'] = True
-    pf.xsection(fig, ax7, winter_ph.time.values, winter_ph.depth_interpolated.values, winter_ph.chlorophyll_a.values, **kwargs)  # winter chl
+    pf.xsection(fig, ax11, winter_ph.time.values, winter_ph.depth_interpolated.values, winter_ph.chlorophyll_a.values, **kwargs)  # winter chl
 
     # print('chl min/max')
     # print(f'gapfill {np.nanmin(ds_gapfill.chlorophyll_a.values)} / {np.nanmax(ds_gapfill.chlorophyll_a.values)}')
@@ -134,14 +153,14 @@ def main(savedir):
     kwargs['vlims'] = [2, 9]
     kwargs['date_fmt'] = '%m-%d'
 
-    placeholder = np.full(np.shape(latesummer.time.values), np.nan)
-    pf.xsection(fig, ax9, latesummer.time.values, latesummer.depth_interpolated.values, placeholder, **kwargs)  # latesummer DO
+    pf.xsection(fig, ax13, latesummer.time.values, latesummer.depth_interpolated.values, latesummer.oxygen_concentration_shifted_mgL.values, **kwargs)  # latesummer DO
 
     kwargs['ylabel'] = None
-    pf.xsection(fig, ax10, fall_do.time.values, fall_do.depth_interpolated.values, fall_do.oxygen_concentration_shifted_mgL.values, **kwargs)  # fall DO
+    falldo_mgL = fall_do.oxygen_concentration_shifted.values * 32 / 1000  # convert from umol/L to mg/L
+    pf.xsection(fig, ax14, fall_do.time.values, fall_do.depth_interpolated.values, falldo_mgL, **kwargs)  # fall DO
 
     kwargs['colorbar'] = True
-    pf.xsection(fig, ax11, winter_do.time.values, winter_do.depth_interpolated.values, winter_do.oxygen_concentration_shifted_mgL.values, **kwargs)  # winter DO
+    pf.xsection(fig, ax15, winter_do.time.values, winter_do.depth_interpolated.values, winter_do.oxygen_concentration_shifted_mgL.values, **kwargs)  # winter DO
 
     # print('DO min/max')
     # print(f'gapfill: none')
@@ -162,13 +181,13 @@ def main(savedir):
     kwargs['colorbar'] = None
     kwargs['vlims'] = [7.6, 8.1]
 
-    pf.xsection(fig, ax13, latesummer.time.values, latesummer.depth_interpolated.values, latesummer.pH.values, **kwargs)  # latesummer pH
+    pf.xsection(fig, ax17, latesummer.time.values, latesummer.depth_interpolated.values, latesummer.pH.values, **kwargs)  # latesummer pH
 
     kwargs['ylabel'] = None
-    pf.xsection(fig, ax14, fall_ph.time.values, fall_ph.depth_interpolated.values, fall_ph.pH.values, **kwargs)  # fall pH
+    pf.xsection(fig, ax18, fall_ph.time.values, fall_ph.depth_interpolated.values, fall_ph.pH.values, **kwargs)  # fall pH
 
     kwargs['colorbar'] = True
-    pf.xsection(fig, ax15, winter_ph.time.values, winter_ph.depth_interpolated.values, winter_ph.pH.values, **kwargs)  # winter pH
+    pf.xsection(fig, ax19, winter_ph.time.values, winter_ph.depth_interpolated.values, winter_ph.pH.values, **kwargs)  # winter pH
 
     # print('pH min/max')
     # print(f'gapfill {np.nanmin(ds_gapfill.pH.values)} / {np.nanmax(ds_gapfill.pH.values)}')
@@ -190,13 +209,13 @@ def main(savedir):
     kwargs['vlims'] = [0.7, 3]
     kwargs['date_fmt'] = '%m-%d'
 
-    pf.xsection(fig, ax17, latesummer.time.values, latesummer.depth_interpolated.values, latesummer.aragonite_saturation_state.values, **kwargs)  # latesummer omega
+    pf.xsection(fig, ax20, latesummer.time.values, latesummer.depth_interpolated.values, latesummer.aragonite_saturation_state.values, **kwargs)  # latesummer omega
 
     kwargs['ylabel'] = None
-    pf.xsection(fig, ax18, fall_ph.time.values, fall_ph.depth_interpolated.values, fall_ph.aragonite_saturation_state.values, **kwargs)  # fall omega
+    pf.xsection(fig, ax21, fall_ph.time.values, fall_ph.depth_interpolated.values, fall_ph.aragonite_saturation_state.values, **kwargs)  # fall omega
 
     kwargs['colorbar'] = True
-    pf.xsection(fig, ax19, winter_ph.time.values, winter_ph.depth_interpolated.values, winter_ph.aragonite_saturation_state.values, **kwargs)  # winter omega
+    pf.xsection(fig, ax22, winter_ph.time.values, winter_ph.depth_interpolated.values, winter_ph.aragonite_saturation_state.values, **kwargs)  # winter omega
 
     # print('omega min/max')
     # print(f'gapfill {np.nanmin(ds_gapfill.aragonite_saturation_state.values)} / {np.nanmax(ds_gapfill.aragonite_saturation_state.values)}')
@@ -208,14 +227,14 @@ def main(savedir):
     # summary_dict['fall_max'].append(np.round(np.nanmax(ds_fall_ph.aragonite_saturation_state.values), 2))
 
     # format x-axis
-    ax17.tick_params(axis='x', rotation=45)
-    ax18.tick_params(axis='x', rotation=45)
-    ax19.tick_params(axis='x', rotation=45)
+    ax20.tick_params(axis='x', rotation=45)
+    ax21.tick_params(axis='x', rotation=45)
+    ax22.tick_params(axis='x', rotation=45)
 
-    #ax1.invert_yaxis()
+    ax1.invert_yaxis()
     plt.subplots_adjust(left=0.06, right=0.93, bottom=0.1, top=0.9)
 
-    sname = os.path.join(savedir, 'multipanel_xsection_2024-fall-winter.png')
+    sname = os.path.join(savedir, 'multipanel_xsection_2023-fall-winter.png')
     plt.savefig(sname, dpi=200)
     plt.close()
 
